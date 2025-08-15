@@ -1,0 +1,85 @@
+﻿@using System.Globalization
+
+<div>
+    <input type="text" @bind="InputValue" @onblur="OnInputBlur" placeholder="TT.MM.JJJJ" />
+
+    <div style="margin-top: 0.5rem;">
+        <button @onclick="SetzeHeute">Heute</button>
+        <button @onclick="Zurücksetzen">Zurücksetzen</button>
+        <button @onclick="Löschen">Löschen</button>
+    </div>
+
+    <div style="margin-top: 0.5rem;">
+        Aktuelles Datum: <strong>@(Value.HasValue? Value.Value.ToString("dd.MM.yyyy") : "Kein Datum ausgewählt")</strong>
+    </div>
+</div>
+
+@code {
+    private string InputValue
+    {
+        get => Value.HasValue ? Value.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) : "";
+        set => inputValueStr = value;
+    }
+
+    private string inputValueStr = "";
+
+    [Parameter]
+    public DateTime? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    [Parameter]
+    public DateTime? InitialDate { get; set; } = DateTime.Today;
+
+    private DateTime MinDate = new(2025, 1, 1);
+    private DateTime MaxDate = new(2025, 12, 31);
+    private DateTime FehlerDatum = new(1800, 1, 1);
+
+    private void SetzeHeute()
+    {
+        Value = DateTime.Today;
+        inputValueStr = InputValue;
+        ValueChanged.InvokeAsync(Value);
+    }
+
+    private void Zurücksetzen()
+    {
+        Value = InitialDate;
+        inputValueStr = InputValue;
+        ValueChanged.InvokeAsync(Value);
+    }
+
+    private void Löschen()
+    {
+        Value = null;
+        inputValueStr = "";
+        ValueChanged.InvokeAsync(Value);
+    }
+
+    private void OnInputBlur()
+    {
+        if (DateTime.TryParseExact(inputValueStr, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+        {
+            if (parsedDate < MinDate || parsedDate > MaxDate || !IstDatumErlaubt(parsedDate))
+            {
+                Value = FehlerDatum;
+            }
+            else
+            {
+                Value = parsedDate;
+            }
+        }
+        else
+        {
+            Value = FehlerDatum;
+        }
+
+        ValueChanged.InvokeAsync(Value);
+    }
+
+    private bool IstDatumErlaubt(DateTime datum)
+    {
+        return datum.Day != 5;
+    }
+}
