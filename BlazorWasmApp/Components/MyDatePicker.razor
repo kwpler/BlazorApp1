@@ -7,12 +7,19 @@
         <button @onclick="SetzeHeute">Heute</button>
         <button @onclick="Zurücksetzen">Zurücksetzen</button>
         <button @onclick="Löschen">Löschen</button>
+        <button @onclick="AllesZurücksetzen"style="color: red;">Alles zurücksetzen</button>
     </div>
 
     <div style="margin-top: 0.5rem;">
         Aktuelles Datum: <strong>@(Value.HasValue? Value.Value.ToString("dd.MM.yyyy") : "Kein Datum ausgewählt")</strong>
     </div>
 </div>
+
+<pre style="margin-top: 1rem; font-size: 0.9rem; background-color: #f9f9f9; padding: 0.5rem; border: 1px solid #ccc;">
+Verlauf (Stack von zuletzt zu erst):
+@string.Join("\n", history.Select(d => d.HasValue ? d.Value.ToString("dd.MM.yyyy") : "null"))
+</pre>
+
 
 @code {
     private string InputValue
@@ -36,25 +43,64 @@
     private DateTime MaxDate = new(2025, 12, 31);
     private DateTime FehlerDatum = new(1800, 1, 1);
 
+    private Stack<DateTime?> history = new Stack<DateTime?>(); // Stack to keep track of previous dates
+
     private void SetzeHeute()
     {
+        if (Value.HasValue && Value != FehlerDatum && Value != DateTime.Today)
+        {
+            history.Push(Value);
+        }
+
         Value = DateTime.Today;
         inputValueStr = InputValue;
         ValueChanged.InvokeAsync(Value);
+
+        StateHasChanged(); // Ensure the UI updates immediately
     }
 
     private void Zurücksetzen()
     {
-        Value = InitialDate;
+        if (history.Count > 0)
+        {
+            Value = history.Pop();
+        }
+        else
+        {
+            Value = InitialDate;
+        }
+
         inputValueStr = InputValue;
         ValueChanged.InvokeAsync(Value);
+
+        StateHasChanged();
+
     }
 
     private void Löschen()
     {
+        if (Value.HasValue && Value != FehlerDatum)
+        {
+            history.Push(Value);
+        }
+
         Value = null;
         inputValueStr = "";
         ValueChanged.InvokeAsync(Value);
+
+        StateHasChanged();
+
+    }
+
+    private void AllesZurücksetzen() 
+    {
+        history.Clear();
+        Value = InitialDate;
+        inputValueStr = InputValue;
+        ValueChanged.InvokeAsync(Value);
+
+        StateHasChanged();
+
     }
 
     private void OnInputBlur()
@@ -67,6 +113,11 @@
             }
             else
             {
+                if (Value.HasValue && Value != FehlerDatum && Value != parsedDate)
+                {
+                    history.Push(Value);
+                }
+
                 Value = parsedDate;
             }
         }
@@ -75,11 +126,15 @@
             Value = FehlerDatum;
         }
 
+        inputValueStr = InputValue;
         ValueChanged.InvokeAsync(Value);
+        StateHasChanged();
+
     }
 
     private bool IstDatumErlaubt(DateTime datum)
     {
         return datum.Day != 5;
     }
+
 }

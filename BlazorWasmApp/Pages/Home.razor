@@ -3,7 +3,7 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Datepicker Calendar</h1>
 
 <MyDatePicker @bind-Value=TheDate/>
 	<br/>
@@ -11,9 +11,9 @@
 @(TheDate.HasValue? TheDate.Value.ToString("dd.MM.yyyy") : "NULL")
 
 <input type="date" @bind=TheDate />
+<br />
 
-
-Welcome to your new app.
+Welcome to your new app. In this app, you can select a date using the custom date picker component. The selected date will be displayed on top of the date picker and in a standard HTML date input field. You can also check out the counter and weather.;)
 @code
 {
 	private DateTime? TheDate { get; set; } = DateTime.Today;

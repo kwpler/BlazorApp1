@@ -7,6 +7,9 @@
 <p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementCountx2">Double progress until 15</button>
+<button class="btn btn-primary" @onclick="IncrementCount1">Decrease me</button>
+<button class="btn btn-primary" @onclick="IncrementCount100">Buff me</button>
 
 @code {
     private int currentCount = 0;
@@ -14,5 +17,35 @@
     private void IncrementCount()
     {
         currentCount++;
+    }
+
+    private void IncrementCountx2()
+    {
+        currentCount++;
+        currentCount++;
+
+        if (currentCount >= 15)
+        {
+            currentCount = 0; // Reset to zero if count is 10 or more
+        }
+
+    }
+
+    private void IncrementCount1()
+    {
+        currentCount--;
+
+        if (currentCount < 0)
+        {
+            currentCount = 0; // Prevent negative count
+        }
+    }
+
+    private void IncrementCount100()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            currentCount++;
+        }
     }
 }
